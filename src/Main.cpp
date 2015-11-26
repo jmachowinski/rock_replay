@@ -3,12 +3,23 @@
 #include <base/Time.hpp>
 #include "LogTask.hpp"
 #include <orocos_cpp/PluginHelper.hpp>
+#include <rtt/transports/corba/TaskContextServer.hpp>
 
 int main(int argc, char** argv)
 {
-    orocos_cpp::PluginHelper::loadAllPluginsInDir("/home/scotch/spacebot_new/install/lib/orocos/gnulinux/types/");
+    RTT::corba::TaskContextServer::InitOrb(argc, argv);
+
+    char *installDir = getenv("AUTOPROJ_CURRENT_ROOT");
     
-    orocos_cpp::PluginHelper::loadAllPluginsInDir("/home/scotch/spacebot_new/install/lib/orocos/types/");
+    if(!installDir)
+    {
+        std::cout << "Error, could not find AUTOPROJ_CURRENT_ROOT env.sh not sourced ?" << std::endl;
+        return 1;
+    }
+    
+    std::cout << "Loading all typekits " << std::endl;
+    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/lib/orocos/gnulinux/types/");
+    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
     
     std::vector<std::string> filenames;
     
