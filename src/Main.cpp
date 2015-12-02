@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     }
     
     std::cout << "Loading all typekits " << std::endl;
-    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/lib/orocos/gnulinux/types/");
+    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
     
     std::vector<std::string> filenames;
