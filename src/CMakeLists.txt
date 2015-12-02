@@ -1,6 +1,6 @@
 rock_library(rock_replay
-    SOURCES LogTask.cpp
-    HEADERS LogTask.hpp
+    SOURCES ReplayHandler.cpp LogTask.cpp
+    HEADERS ReplayHandler.hpp LogTask.hpp
     DEPS_PKGCONFIG 
         orocos_cpp
         pocolog_cpp
