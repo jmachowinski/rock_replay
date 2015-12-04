@@ -53,7 +53,8 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         streamToTask[gIdx] = task;
     }
 
-    replayFactor = 1.;
+    replayFactor = 1000.;
+    actualSpeed = replayFactor;
     
 }
 
@@ -93,18 +94,41 @@ void ReplayHandler::replayAllSamples() const
     {
         const base::Time curStamp(getTimeStamp(i == 0 ? 0 : i-1)), nextStamp(getTimeStamp(i));
         const base::Time duration(nextStamp - curStamp);
-        if(duration.toSeconds() < 0)
+        if(duration.toMicroseconds() < 0)
         {
             std::cout << "Warning: invalid sample order" << std::endl;
         }
         else
         {
-            int64_t timeSinceLastExecute = std::max((base::Time::now() - lastExecute).toMicroseconds(), (int64_t)0);
+            int64_t timeSinceLastExecute = (base::Time::now() - lastExecute).toMicroseconds();
             int64_t sleepDuration = (duration.toMicroseconds() / replayFactor);
             if(timeSinceLastExecute < sleepDuration)
+            {
                 usleep(sleepDuration - timeSinceLastExecute);
-        }
+                actualSpeed = replayFactor;
+            }
+            else if(timeSinceLastExecute == sleepDuration)
+            {
+                actualSpeed = replayFactor;
+            }
+            else
+            {
+                if(timeSinceLastExecute == 0)
+                    timeSinceLastExecute = 1;
                 
+                actualSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);
+            }
+            std::cout << "#########################" << std::endl;
+            std::cout << "duration: " << duration.toMicroseconds() << std::endl;
+            std::cout << "timeSinceLastExecute: " << timeSinceLastExecute << std::endl;
+            std::cout << "sleepDuration: " << sleepDuration << std::endl;
+            std::cout << "actual speed is: " << actualSpeed << std::endl;
+            std::cout << "#########################" << std::endl;
+            
+            
+        }
+                    
+            
         //TODO check if chronological ordering is right
         replaySample(i);
         lastExecute = base::Time::now();
@@ -126,6 +150,12 @@ const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
     size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(globalIndex);
     pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalStreamIndex)->getFileIndex();
     return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));
+}
+
+
+double ReplayHandler::getActualSpeed() const
+{
+    return actualSpeed;
 }
 
 

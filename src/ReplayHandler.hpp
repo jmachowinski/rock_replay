@@ -18,9 +18,11 @@ public:
     void replayAllSamples() const;
     
     void setReplayFactor(double factor);
+    double getActualSpeed() const;
     
 private:  
     double replayFactor;
+    mutable double actualSpeed;
     std::vector<std::string> filenames;
     std::map<std::string, LogTask *> logTasks;
     std::vector<LogTask *> streamToTask;
