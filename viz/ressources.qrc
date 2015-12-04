@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/Icons-master/picol_latest_prerelease_svg/trash.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/cancel.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/plus.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/controls_stop.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/controls_rewind.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/controls_fast_forward.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/refresh.svg</file>
+    <file>icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg</file>
+  </qresource>
+</RCC>
