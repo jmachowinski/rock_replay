@@ -58,7 +58,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_3">
+         <widget class="QPushButton" name="playButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -82,7 +82,10 @@
           </property>
           <property name="icon">
            <iconset resource="ressources.qrc">
-            <normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg</normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg</iconset>
+            <normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg</normaloff>
+            <normalon>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg</normalon>
+            :/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg
+            :/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -500,12 +503,15 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QListView" name="listView_2">
+           <widget class="QListView" name="taskNameList">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="editTriggers">
+                <set>QAbstractItemView::NoEditTriggers</set>
             </property>
             <property name="maximumSize">
              <size>
@@ -606,28 +612,29 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="0">
-     <widget class="QTextBrowser" name="textBrowser">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>100</height>
-       </size>
-      </property>
-      <property name="verticalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOn</enum>
-      </property>
-      <property name="horizontalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-     </widget>
-    </item>
+    <!--<item row="1" column="0">
+    <widget class="QListView" name="logConsole">
+        <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            </sizepolicy>
+        </property>
+        <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>100</height>
+        </size>
+        </property>
+        <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOn</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+    </widget>
+    </item>-->
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">

@@ -20,7 +20,7 @@ public:
 LogTask::LogTask(const std::string& name)
 {
     task = new RTT::TaskContext(name);
-        
+
     RTT::corba::TaskContextServer::Create( task );
     RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
 }

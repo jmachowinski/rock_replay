@@ -5,6 +5,8 @@
 #include <base/Time.hpp>
 #include <orocos_cpp/PluginHelper.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/condition_variable.hpp>
 
 #include "LogTask.hpp"
 
@@ -15,14 +17,36 @@ public:
     ReplayHandler(int argc, char** argv);
     ~ReplayHandler();
     
-    void replayAllSamples() const;
+    void replaySamples();
+    
+    void toggle();
+
+    
+    void next();
+    void previous();
+    void setSampleIndex(uint index);
     
     void setReplayFactor(double factor);
     double getActualSpeed() const;
     
+    inline const std::map<std::string, LogTask*>& getAllLogTasks()
+    {
+        return logTasks;
+    }
+    
+    
+    
 private:  
     double replayFactor;
     mutable double actualSpeed;
+    uint curIndex;
+    bool finished;
+    
+    bool play;
+    boost::thread *replayThread;
+    boost::condition_variable cond;
+    boost::mutex mut;
+    
     std::vector<std::string> filenames;
     std::map<std::string, LogTask *> logTasks;
     std::vector<LogTask *> streamToTask;

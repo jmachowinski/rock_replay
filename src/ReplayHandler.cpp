@@ -15,6 +15,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     std::cout << "Loading all typekits " << std::endl;
     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
+
     
     for(int i = 1; i < argc; i++)
     {
@@ -29,7 +30,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(st);
         if(!inputSt)
             continue;       
-        
+
         std::string taskName = st->getName();
         taskName = taskName.substr(0, taskName.find_last_of('.'));
         
@@ -55,6 +56,11 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
 
     replayFactor = 1000.;
     actualSpeed = replayFactor;
+    curIndex = 0;
+    finished = false;
+    play = false;
+    
+    replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
     
 }
 
@@ -62,6 +68,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
 ReplayHandler::~ReplayHandler()
 {
     delete multiIndex;
+    delete replayThread;
 }
 
 void ReplayHandler::replaySample(size_t index) const
@@ -70,7 +77,7 @@ void ReplayHandler::replaySample(size_t index) const
     {
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
-    //     std::cout << "Gidx is " << globalStreamIndex << std::endl;
+        std::cout << "Gidx is " << globalStreamIndex << std::endl;
     
         streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
     } 
@@ -82,64 +89,58 @@ void ReplayHandler::replaySample(size_t index) const
 
 
 
-void ReplayHandler::replayAllSamples() const
+void ReplayHandler::replaySamples()
 {
+    boost::unique_lock<boost::mutex> lock(mut);
+    
     std::cout << "Replaying all samples" << std::endl;
     base::Time start(base::Time::now()), lastExecute(base::Time::now());
 
     size_t allSamples = multiIndex->getSize();
-    int lastPercentage = 0;
-
-    for(size_t i = 0; i < allSamples; i++)
+    
+    while(!finished)
     {
-        const base::Time curStamp(getTimeStamp(i == 0 ? 0 : i-1)), nextStamp(getTimeStamp(i));
-        const base::Time duration(nextStamp - curStamp);
-        if(duration.toMicroseconds() < 0)
+        
+        while(!play)
+            cond.wait(lock);
+        
+        if(allSamples > 0 && curIndex <= allSamples)
         {
-            std::cout << "Warning: invalid sample order" << std::endl;
-        }
-        else
-        {
-            int64_t timeSinceLastExecute = (base::Time::now() - lastExecute).toMicroseconds();
-            int64_t sleepDuration = (duration.toMicroseconds() / replayFactor);
-            if(timeSinceLastExecute < sleepDuration)
+            const base::Time curStamp(getTimeStamp(curIndex == 0 ? 0 : curIndex-1)), nextStamp(getTimeStamp(curIndex));
+            const base::Time duration(nextStamp - curStamp);
+            if(duration.toMicroseconds() < 0)
             {
-                usleep(sleepDuration - timeSinceLastExecute);
-                actualSpeed = replayFactor;
-            }
-            else if(timeSinceLastExecute == sleepDuration)
-            {
-                actualSpeed = replayFactor;
+                std::cout << "Warning: invalid sample order" << std::endl;
             }
             else
             {
-                if(timeSinceLastExecute == 0)
-                    timeSinceLastExecute = 1;
-                
-                actualSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);
-            }
-            std::cout << "#########################" << std::endl;
-            std::cout << "duration: " << duration.toMicroseconds() << std::endl;
-            std::cout << "timeSinceLastExecute: " << timeSinceLastExecute << std::endl;
-            std::cout << "sleepDuration: " << sleepDuration << std::endl;
-            std::cout << "actual speed is: " << actualSpeed << std::endl;
-            std::cout << "#########################" << std::endl;
-            
-            
-        }
+                int64_t timeSinceLastExecute = (base::Time::now() - lastExecute).toMicroseconds();
+                int64_t sleepDuration = (duration.toMicroseconds() / replayFactor);
+                if(timeSinceLastExecute < sleepDuration)
+                {
+                    usleep(sleepDuration - timeSinceLastExecute);
+                    actualSpeed = replayFactor;
+                }
+                else if(timeSinceLastExecute == sleepDuration)
+                {
+                    actualSpeed = replayFactor;
+                }
+                else
+                {
+                    if(timeSinceLastExecute == 0)
+                        timeSinceLastExecute = 1;
                     
-            
-        //TODO check if chronological ordering is right
-        replaySample(i);
-        lastExecute = base::Time::now();
-        
-        int curPercentag = (i * 100 / allSamples);
-        if(lastPercentage != curPercentag)
-        {
-            lastPercentage = curPercentag;
-            std::cout << "\r" << lastPercentage << "% Done" << std::flush;
+                    actualSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);
+                }           
+                
+            }
+                        
+            //TODO check if chronological ordering is right
+            replaySample(curIndex);
+            curIndex++;
         }
-
+        else
+            play = false;
         
     }
     
@@ -164,6 +165,33 @@ void ReplayHandler::setReplayFactor(double factor)
 {
     this->replayFactor = factor;
 }
+
+
+void ReplayHandler::next()
+{
+
+}
+
+void ReplayHandler::previous()
+{
+
+}
+
+
+void ReplayHandler::setSampleIndex(uint index)
+{
+
+}
+
+void ReplayHandler::toggle()
+{
+    play = !play;
+    if(play)
+        cond.notify_one();
+}
+
+
+
 
 
 
