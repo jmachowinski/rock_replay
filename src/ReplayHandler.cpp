@@ -55,7 +55,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     }
 
     replayFactor = 1000.;
-    actualSpeed = replayFactor;
+    currentSpeed = replayFactor;
     curIndex = 0;
     finished = false;
     play = false;
@@ -95,7 +95,7 @@ void ReplayHandler::replaySamples()
     
     std::cout << "Replaying all samples" << std::endl;
     base::Time start(base::Time::now()), lastExecute(base::Time::now());
-
+    
     size_t allSamples = multiIndex->getSize();
     
     while(!finished)
@@ -119,18 +119,18 @@ void ReplayHandler::replaySamples()
                 if(timeSinceLastExecute < sleepDuration)
                 {
                     usleep(sleepDuration - timeSinceLastExecute);
-                    actualSpeed = replayFactor;
+                    currentSpeed = replayFactor;
                 }
                 else if(timeSinceLastExecute == sleepDuration)
                 {
-                    actualSpeed = replayFactor;
+                    currentSpeed = replayFactor;
                 }
                 else
                 {
                     if(timeSinceLastExecute == 0)
                         timeSinceLastExecute = 1;
                     
-                    actualSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);
+                    currentSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);
                 }           
                 
             }
@@ -151,12 +151,6 @@ const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
     size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(globalIndex);
     pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalStreamIndex)->getFileIndex();
     return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));
-}
-
-
-double ReplayHandler::getActualSpeed() const
-{
-    return actualSpeed;
 }
 
 

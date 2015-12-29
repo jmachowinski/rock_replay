@@ -27,18 +27,16 @@ public:
     void setSampleIndex(uint index);
     
     void setReplayFactor(double factor);
-    double getActualSpeed() const;
     
-    inline const std::map<std::string, LogTask*>& getAllLogTasks()
-    {
-        return logTasks;
-    }
-    
-    
+    inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
+    inline const uint getCurIndex() { return curIndex; };
+    inline const size_t getMaxIndex() { return multiIndex->getSize(); };
+    inline const double getReplayFactor() { return replayFactor; };
+    inline const double getCurrentSpeed() { return currentSpeed; };
     
 private:  
     double replayFactor;
-    mutable double actualSpeed;
+    mutable double currentSpeed;
     uint curIndex;
     bool finished;
     

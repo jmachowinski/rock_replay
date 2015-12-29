@@ -5,6 +5,7 @@
 
 #include <QMainWindow>
 #include <QStringListModel>
+#include <QTimer>
 
 #include "ui_main.h"
 
@@ -32,10 +33,14 @@ private:
     // icons
     QIcon playIcon, pauseIcon;
     
+    // timers
+    QTimer *speedTimer;
+    
     
 public slots:
     void togglePlay();
-
+    void updateProgressBar();
+    
 };
 
 #endif // REPLAY_GUI_H

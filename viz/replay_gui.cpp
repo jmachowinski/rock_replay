@@ -12,13 +12,23 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     taskNameListModel = new QStringListModel(*taskNameList);
     ui.taskNameList->setModel(taskNameListModel);    
     
+    // timer
+    speedTimer = new QTimer();
+    speedTimer->setInterval(350);
     
-    //icons
+    // progress bar
+    ui.progressBar->setMinimum(0);
+
+    
+    // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
     pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
     
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
+    QObject::connect(speedTimer, SIGNAL(timeout()), this, SLOT(updateProgressBar()));
+    
+    speedTimer->start();
     
 }
 
@@ -31,12 +41,15 @@ ReplayGui::~ReplayGui()
 void ReplayGui::initReplayHandler(int argc, char* argv[])
 {
     replayHandler = new ReplayHandler(argc, argv);
+    
+    // progress bar
+    ui.progressBar->setMaximum(replayHandler->getReplayFactor());
 }
 
 
 void ReplayGui::updateTaskNames()
 {
-    for(std::pair<std::string, LogTask*> cur : replayHandler->getAllLogTasks())
+    for(const std::pair<std::string, LogTask*>& cur : replayHandler->getAllLogTasks())
     {
         std::string taskName = cur.first;
         for(const std::string& portName : cur.second->getTaskContext()->ports()->getPortNames())
@@ -69,3 +82,10 @@ void ReplayGui::togglePlay()
         ui.playButton->setChecked(false);
     }
 }
+
+
+void ReplayGui::updateProgressBar()
+{
+    ui.progressBar->setValue(replayHandler->getCurrentSpeed() * ui.progressBar->maximum());
+}
+
