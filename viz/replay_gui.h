@@ -29,6 +29,10 @@ private:
     // lists
     QStringList *taskNameList;
     
+    // icons
+    QIcon playIcon, pauseIcon;
+    
+    
 public slots:
     void togglePlay();
 

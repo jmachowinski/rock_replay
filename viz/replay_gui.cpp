@@ -12,6 +12,12 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     taskNameListModel = new QStringListModel(*taskNameList);
     ui.taskNameList->setModel(taskNameListModel);    
     
+    
+    //icons
+    playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
+    pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
+    
+    // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
     
 }
@@ -52,4 +58,14 @@ void ReplayGui::updateTaskNames()
 void ReplayGui::togglePlay()
 {
     replayHandler->toggle();
+    if(ui.playButton->isChecked())
+    {
+        ui.playButton->setIcon(pauseIcon);
+        ui.playButton->setChecked(true);
+    }
+    else
+    {
+        ui.playButton->setIcon(playIcon);
+        ui.playButton->setChecked(false);
+    }
 }
