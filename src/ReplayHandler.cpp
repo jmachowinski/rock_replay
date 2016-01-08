@@ -54,7 +54,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         streamToTask[gIdx] = task;
     }
 
-    replayFactor = 1000.;
+    replayFactor = 1.;
     currentSpeed = replayFactor;
     curIndex = 0;
     finished = false;
@@ -112,6 +112,7 @@ void ReplayHandler::replaySamples()
                 continue;
             }
             
+            
             if(duration.toMicroseconds() < 0)
             {
                 std::cout << "Warning: invalid sample order" << std::endl;
@@ -129,19 +130,18 @@ void ReplayHandler::replaySamples()
                 {
                     currentSpeed = replayFactor;
                 }
-                else
+                else if(duration.toMicroseconds() != 0) // in case of non-parallel samples
                 {
-                    if(timeSinceLastExecute == 0)
-                        timeSinceLastExecute = 1;
-                    
-                    currentSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);
+                    currentSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);   
                 }           
                 
             }
                         
             //TODO check if chronological ordering is right
             replaySample(curIndex);
+            
             curIndex++;
+            lastExecute = base::Time::now();
         }
         else
             play = false;

@@ -14,11 +14,13 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     
     // timer
     speedTimer = new QTimer();
-    speedTimer->setInterval(350);
+    speedTimer->setInterval(10);
     
     // progress bar
     ui.progressBar->setMinimum(0);
-    
+    ui.progressBar->setFormat("paused");
+    ui.progressBar->setValue(0);
+
     // labels
     
     
@@ -29,8 +31,8 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
     QObject::connect(speedTimer, SIGNAL(timeout()), this, SLOT(updateProgressBar()));
-    
-    speedTimer->start();
+    QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
+    QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
     
 }
 
@@ -45,7 +47,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     replayHandler = new ReplayHandler(argc, argv);
     
     // progress bar
-    ui.progressBar->setMaximum(replayHandler->getReplayFactor());
+    ui.progressBar->setMaximum(100);
     
     // labels
     ui.label_sample_count->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
@@ -73,6 +75,45 @@ void ReplayGui::updateTaskNames()
 }
 
 
+
+
+
+int ReplayGui::boxToSlider(double val)
+{
+    if(val <= 1)
+    {
+        return val * 50;
+    }
+    else if(val <= 1000)
+    {
+        return (val / 40.0) + 50;
+    }
+    else
+    {
+        return (val / 400.0) + 75;
+    }
+}
+
+double ReplayGui::sliderToBox(int val)
+{
+    if(val <= 50)
+    {
+        return val / 50.0;
+    }
+    else if(val <= 75)
+    {
+        return (val - 50) * 40.0;
+    }
+    else
+    {
+        return (val - 75) * 400.0;
+    }
+}
+
+
+
+
+
 // #######################################
 // ######### SLOT IMPLEMENTATION #########
 // #######################################
@@ -84,11 +125,17 @@ void ReplayGui::togglePlay()
     {
         ui.playButton->setIcon(pauseIcon);
         ui.playButton->setChecked(true);
+        ui.progressBar->setFormat("%p%");
+        speedTimer->start();
     }
     else
     {
         ui.playButton->setIcon(playIcon);
         ui.playButton->setChecked(false);
+        speedTimer->stop();
+        ui.progressBar->setValue(0);
+        ui.progressBar->setFormat("paused");
+
     }
 }
 
@@ -97,4 +144,21 @@ void ReplayGui::updateProgressBar()
 {
     ui.progressBar->setValue(replayHandler->getCurrentSpeed() * ui.progressBar->maximum());
 }
+
+
+void ReplayGui::setSpeedBox()
+{
+    double speed = ui.speedBox->value();
+    replayHandler->setReplayFactor(speed);
+    ui.speedSlider->setValue(boxToSlider(speed));
+    
+}
+
+void ReplayGui::setSpeedSlider()
+{
+    double speed = sliderToBox(ui.speedSlider->value());
+    replayHandler->setReplayFactor(speed);
+    ui.speedBox->setValue(speed);
+}
+
 

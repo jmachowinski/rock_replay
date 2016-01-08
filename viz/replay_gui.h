@@ -39,10 +39,15 @@ private:
     // labels
     QLabel *label_sample_count;
     
+    double sliderToBox(int val);
+    int boxToSlider(double val);
+    
     
 public slots:
     void togglePlay();
     void updateProgressBar();
+    void setSpeedBox();
+    void setSpeedSlider();
     
 };
 
