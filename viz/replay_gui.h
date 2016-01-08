@@ -36,6 +36,9 @@ private:
     // timers
     QTimer *speedTimer;
     
+    // labels
+    QLabel *label_sample_count;
+    
     
 public slots:
     void togglePlay();

@@ -18,7 +18,9 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     
     // progress bar
     ui.progressBar->setMinimum(0);
-
+    
+    // labels
+    
     
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
@@ -44,6 +46,13 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     
     // progress bar
     ui.progressBar->setMaximum(replayHandler->getReplayFactor());
+    
+    // labels
+    ui.label_sample_count->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
+    
+    // window title
+    if(argc > 1) 
+        this->setWindowTitle(QString(argv[1]));
 }
 
 

@@ -59,9 +59,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     curIndex = 0;
     finished = false;
     play = false;
-    
     replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
-    
 }
 
 
@@ -78,7 +76,6 @@ void ReplayHandler::replaySample(size_t index) const
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
         std::cout << "Gidx is " << globalStreamIndex << std::endl;
-    
         streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
     } 
     catch(...)
@@ -86,8 +83,6 @@ void ReplayHandler::replaySample(size_t index) const
         std::cout << "Warning: ignoring corrupt sample: " << index << "/" << multiIndex->getSize() << std::endl;
     }
 }
-
-
 
 void ReplayHandler::replaySamples()
 {
@@ -106,8 +101,17 @@ void ReplayHandler::replaySamples()
         
         if(allSamples > 0 && curIndex <= allSamples)
         {
-            const base::Time curStamp(getTimeStamp(curIndex == 0 ? 0 : curIndex-1)), nextStamp(getTimeStamp(curIndex));
-            const base::Time duration(nextStamp - curStamp);
+            
+            try {
+                curStamp = getTimeStamp(curIndex == 0 ? 0 : curIndex-1);
+                nextStamp = getTimeStamp(curIndex);
+                duration = nextStamp - curStamp;
+            } catch (...) {
+                std::cout << "getTimeStamp() failed:  curIndex: " << curIndex << ", allSamples: " << allSamples << std::endl;
+                curIndex++;
+                continue;
+            }
+            
             if(duration.toMicroseconds() < 0)
             {
                 std::cout << "Warning: invalid sample order" << std::endl;
@@ -179,9 +183,14 @@ void ReplayHandler::setSampleIndex(uint index)
 
 void ReplayHandler::toggle()
 {
-    play = !play;
-    if(play)
+    if(!play) {
+        play = true;
         cond.notify_one();
+        std::cout << "Starting replay" << std::endl;
+    } else {
+        play = false;
+        std::cout << "Stopping replay" << std::endl;
+    }
 }
 
 

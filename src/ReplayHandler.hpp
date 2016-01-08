@@ -33,12 +33,16 @@ public:
     inline const size_t getMaxIndex() { return multiIndex->getSize(); };
     inline const double getReplayFactor() { return replayFactor; };
     inline const double getCurrentSpeed() { return currentSpeed; };
+    inline const std::vector<std::string> getFileNames() { return filenames; };
     
 private:  
     double replayFactor;
     mutable double currentSpeed;
     uint curIndex;
     bool finished;
+    base::Time curStamp;
+    base::Time nextStamp;
+    base::Time duration;
     
     bool play;
     boost::thread *replayThread;
