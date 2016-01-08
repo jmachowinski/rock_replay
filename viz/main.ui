@@ -83,15 +83,16 @@
           <property name="icon">
            <iconset resource="ressources.qrc">
             <normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg</normaloff>
-            <normalon>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg</normalon>
-            :/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg
-            :/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg</iconset>
+            <normalon>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg</normalon>:/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
             <width>35</width>
             <height>35</height>
            </size>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -510,14 +511,14 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="editTriggers">
-                <set>QAbstractItemView::NoEditTriggers</set>
-            </property>
             <property name="maximumSize">
              <size>
               <width>300</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
             </property>
            </widget>
           </item>
@@ -612,29 +613,6 @@
       </item>
      </layout>
     </item>
-    <!--<item row="1" column="0">
-    <widget class="QListView" name="logConsole">
-        <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            </sizepolicy>
-        </property>
-        <property name="editTriggers">
-            <set>QAbstractItemView::NoEditTriggers</set>
-        </property>
-        <property name="maximumSize">
-        <size>
-            <width>16777215</width>
-            <height>100</height>
-        </size>
-        </property>
-        <property name="verticalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOn</enum>
-        </property>
-        <property name="horizontalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOff</enum>
-        </property>
-    </widget>
-    </item>-->
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
