@@ -22,7 +22,33 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         filenames.push_back(argv[i]);
     }
     
-    multiIndex = new pocolog_cpp::MultiFileIndex(filenames);
+    multiIndex = new pocolog_cpp::MultiFileIndex();
+    
+    RTT::types::TypeInfoRepository::shared_ptr ti = RTT::types::TypeInfoRepository::Instance();
+
+    multiIndex->registerStreamCheck([&](pocolog_cpp::Stream *st){
+        std::cout << "Checking " << st->getName() << std::endl;
+        pocolog_cpp::InputDataStream *dataStream = dynamic_cast<pocolog_cpp::InputDataStream *>(st);
+        if(!dataStream)
+        {
+            return false;
+        }
+        
+        std::string typestr = dataStream->getType()->getName();
+        RTT::types::TypeInfo* type = ti->type(typestr);
+        if (! type)
+        {
+            std::cerr << "cannot find " << typestr << " in the type info repository" << std::endl;
+            return false;
+        }
+        
+        
+        return true;
+    }
+    );
+    
+    multiIndex->createIndex(filenames);
+    
     streamToTask.resize(multiIndex->getAllStreams().size());
 
     for(pocolog_cpp::Stream *st : multiIndex->getAllStreams())
