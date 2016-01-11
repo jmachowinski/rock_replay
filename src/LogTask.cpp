@@ -108,7 +108,7 @@ bool LogTask::addStream(const pocolog_cpp::InputDataStream& stream)
 void LogTask::replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr)
 {
     size_t idx = stream.getIndex();
-    std::cout << "TaskName is " << task->getName() << " streamName " << stream.getName() << " idx " << idx << std::endl; 
+//     std::cout << "TaskName is " << task->getName() << " streamName " << stream.getName() << " idx " << idx << std::endl; 
     
     if(idx >= handles.size() || !handles[idx])
     {

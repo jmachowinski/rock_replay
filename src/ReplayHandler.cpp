@@ -101,7 +101,7 @@ void ReplayHandler::replaySample(size_t index) const
     {
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
-        std::cout << "Gidx is " << globalStreamIndex << std::endl;
+//         std::cout << "Gidx is " << globalStreamIndex << std::endl;
         streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
     } 
     catch(...)
