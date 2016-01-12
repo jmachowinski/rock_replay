@@ -1,4 +1,6 @@
 #include "ReplayHandler.hpp"
+#include "orocos_cpp/TypeRegistry.hpp"
+
 
 ReplayHandler::ReplayHandler(int argc, char** argv)
 {
@@ -12,10 +14,13 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         throw std::runtime_error("Error, could not find AUTOPROJ_CURRENT_ROOT env.sh not sourced ?");
     }
     
-    std::cout << "Loading all typekits " << std::endl;
-    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
-    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
+//     std::cout << "Loading all typekits " << std::endl;
+//     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
+//     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
 
+    orocos_cpp::TypeRegistry reg;
+    
+    reg.loadTypelist();
     
     for(int i = 1; i < argc; i++)
     {
@@ -35,15 +40,15 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         }
         
         std::string typestr = dataStream->getType()->getName();
-        RTT::types::TypeInfo* type = ti->type(typestr);
-        if (! type)
+        
+        std::string tkName;
+        if(!reg.getTypekitDefiningType(typestr, tkName))
         {
             std::cerr << "cannot find " << typestr << " in the type info repository" << std::endl;
             return false;
         }
-        
-        
-        return true;
+
+        return orocos_cpp::PluginHelper::loadTypekitAndTransports(tkName);
     }
     );
     
