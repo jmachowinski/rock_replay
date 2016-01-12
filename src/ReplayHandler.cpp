@@ -178,8 +178,8 @@ void ReplayHandler::replaySamples()
 
 const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
 {    
-    size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(globalIndex);
-    pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalStreamIndex)->getFileIndex();
+//     size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(globalIndex);
+    pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalIndex)->getFileIndex();
     return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));
 }
 
