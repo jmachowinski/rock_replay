@@ -119,59 +119,91 @@ void ReplayHandler::replaySamples()
     
     size_t allSamples = multiIndex->getSize();
     
+    restartReplay = true;
+
+    base::Time lastStamp;
+    base::Time curStamp;
+    base::Time toSleep;
+
+    base::Time systemPlayStartTime;
+    base::Time logPlayStartTime;
+    curStamp = getTimeStamp(curIndex);
+    
     while(!finished)
     {
         
         while(!play)
-            cond.wait(lock);
-        
-        if(allSamples > 0 && curIndex <= allSamples)
         {
-            
-            try {
-                curStamp = getTimeStamp(curIndex == 0 ? 0 : curIndex-1);
-                nextStamp = getTimeStamp(curIndex);
-                duration = nextStamp - curStamp;
-            } catch (...) {
-                std::cout << "getTimeStamp() failed:  curIndex: " << curIndex << ", allSamples: " << allSamples << std::endl;
-                curIndex++;
-                continue;
-            }
-            
-            
-            if(duration.toMicroseconds() < 0)
-            {
-                std::cout << "Warning: invalid sample order" << std::endl;
-            }
-            else
-            {
-                int64_t timeSinceLastExecute = (base::Time::now() - lastExecute).toMicroseconds();
-                int64_t sleepDuration = (duration.toMicroseconds() / replayFactor);
-                if(timeSinceLastExecute < sleepDuration)
-                {
-                    usleep(sleepDuration - timeSinceLastExecute);
-                    currentSpeed = replayFactor;
-                }
-                else if(timeSinceLastExecute == sleepDuration)
-                {
-                    currentSpeed = replayFactor;
-                }
-                else if(duration.toMicroseconds() != 0) // in case of non-parallel samples
-                {
-                    currentSpeed = static_cast<double>((double)duration.toMicroseconds() / (double)timeSinceLastExecute);   
-                }           
-                
-            }
-                        
-            //TODO check if chronological ordering is right
-            replaySample(curIndex);
-            
-            curIndex++;
-            lastExecute = base::Time::now();
+            cond.wait(lock);
+            restartReplay = true;
         }
-        else
-            play = false;
+
+//         std::cout << "Replaying Sample " << curIndex << std::endl;
         
+        if(curIndex >= allSamples)
+        {
+            play = false;
+            continue;
+        }
+
+        if(restartReplay)
+        {
+            systemPlayStartTime = base::Time::now();
+            
+            //expensive call
+            curStamp = getTimeStamp(curIndex);
+            logPlayStartTime = curStamp;
+            
+            restartReplay = false;
+        }
+
+        //TODO check if chronological ordering is right
+        replaySample(curIndex);
+
+        lastStamp = curStamp;
+
+        curIndex++;
+        if(curIndex >= allSamples)
+        {
+            play = false;
+            continue;
+        }
+        
+        curStamp = getTimeStamp(curIndex);
+    
+//         std::cout << "NExt Sample " << curIndex << " Cur Time " << curStamp << " last Time " << lastStamp <<  std::endl;
+
+        
+        if(lastStamp > curStamp)
+        {
+            std::cout << "Warning: invalid sample order curStamp " << curStamp <<  " LAst Stamp " << lastStamp << std::endl;
+        }
+
+        //hm, also expensive, is there a way to reduce this ?
+        base::Time curTime = base::Time::now();
+        
+        //hm, factor... should it not be * replayFactor then ?
+        base::Time logTimeSinceStart = (curStamp - logPlayStartTime) / replayFactor;
+        base::Time systemTimeSinceStart = (curTime - systemPlayStartTime);
+        toSleep = logTimeSinceStart - systemTimeSinceStart;
+        
+//         std::cout << "Log time since start " << logTimeSinceStart << std::endl;
+//         std::cout << "Sys time since start " << systemTimeSinceStart << std::endl;
+//         std::cout << "To Sleep " << toSleep.microseconds << std::endl;
+        
+        if(toSleep.microseconds > 0)
+        {
+            usleep(toSleep.microseconds);
+            currentSpeed = replayFactor;
+        }
+        else if(toSleep.microseconds == 0)
+        {
+            currentSpeed = replayFactor;
+        }
+        else // tosleep < 0
+        {
+            currentSpeed = logTimeSinceStart.toSeconds() / systemTimeSinceStart.toSeconds();   
+        }           
     }
     
 }
@@ -188,6 +220,7 @@ const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
 void ReplayHandler::setReplayFactor(double factor)
 {
     this->replayFactor = factor;
+    restartReplay = true;
 }
 
 
@@ -211,6 +244,7 @@ void ReplayHandler::toggle()
 {
     if(!play) {
         play = true;
+        restartReplay = true;
         cond.notify_one();
         std::cout << "Starting replay" << std::endl;
     } else {
