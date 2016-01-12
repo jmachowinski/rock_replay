@@ -119,19 +119,71 @@ void ReplayHandler::replaySamples()
     
     size_t allSamples = multiIndex->getSize();
     
+    indexChanged = true;
+
+    base::Time lastStamp;
+    base::Time curStamp;
+    base::Time duration;
+    base::Time toSleep;
+
+    base::Time playStartTime;
+    
+    curStamp = getTimeStamp(curIndex);
+    
     while(!finished)
     {
         
         while(!play)
+        {
             cond.wait(lock);
+            playStartTime = base::Time::now();
+            duration = base::Time();
+            toSleep = base::Time();
+        }
+
+        if(toSleep.microseconds)
+        {
+            usleep(toSleep.microseconds);
+        }
+        
+        
+        //TODO check if chronological ordering is right
+        replaySample(curIndex);
+
+        if(indexChanged)
+        {
+            //expensive call
+            lastStamp = getTimeStamp(curIndex == 0 ? 0 : curIndex-1);
+        }
+        else
+        {
+            lastStamp = curStamp;
+        }
+
+        curIndex++;
+        if(curIndex >= allSamples)
+        {
+            play = false;
+            continue;
+        }
+        
+        curStamp = getTimeStamp(curIndex);
+        
+        duration = curStamp - lastStamp;
+        
+        if(duration.toMicroseconds() < 0)
+        {
+            std::cout << "Warning: invalid sample order" << std::endl;
+        }
+        
         
         if(allSamples > 0 && curIndex <= allSamples)
         {
             
             try {
-                curStamp = getTimeStamp(curIndex == 0 ? 0 : curIndex-1);
-                nextStamp = getTimeStamp(curIndex);
-                duration = nextStamp - curStamp;
+                lastStamp = getTimeStamp(curIndex == 0 ? 0 : curIndex-1);
+                curStamp = getTimeStamp(curIndex);
+                duration = curStamp - lastStamp;
             } catch (...) {
                 std::cout << "getTimeStamp() failed:  curIndex: " << curIndex << ", allSamples: " << allSamples << std::endl;
                 curIndex++;
@@ -163,8 +215,6 @@ void ReplayHandler::replaySamples()
                 
             }
                         
-            //TODO check if chronological ordering is right
-            replaySample(curIndex);
             
             curIndex++;
             lastExecute = base::Time::now();

@@ -36,13 +36,11 @@ public:
     inline const std::vector<std::string> getFileNames() { return filenames; };
     
 private:  
+    bool indexChanged;
     double replayFactor;
     mutable double currentSpeed;
     uint curIndex;
     bool finished;
-    base::Time curStamp;
-    base::Time nextStamp;
-    base::Time duration;
     
     bool play;
     boost::thread *replayThread;
